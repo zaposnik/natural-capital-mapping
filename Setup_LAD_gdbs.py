@@ -1,5 +1,14 @@
-# Sets up one geodatabase for each LAD, clips and copies in the input files for OSMM, LAD boundary, and either CROME (formerly used LCM)
-# and PHI or Phase 1 habitat (HLU). Can be applied either to Oxfordshire or the other LADs in the Arc.
+# Distribution Ready: 11/17/2022
+# Step 2: IF YOU HAVE NOT RUN MYFUNCTIONS.PY YET GO BACK AND RUN THAT FIRST, THIS IS THE SECOND STEP IN THE NAT
+# CAP PROCESS
+# This code sets up one geodatabase for each Local Authority District (LAD), clips and copies in the input files for
+# OSMM,
+# LAD boundary, and either CROME (formerly used LCM) and PHI or Phase 1 habitat (HLU).
+# Can be applied either to Oxfordshire or the other LADs in the Arc. The basic format of this code is to call from a
+# previously set up folder which holds a previously set up File Geodatabase (gdb) called 'Data.gdb'.
+# REQUIRED: shapefile in the Data.gdb which has all LADs that are required in the analysis
+# REQUIRED: an input of LADs which the user is interested in. These can be changed in the 'LADs_Inlcuded' list to not
+# process more data than necessary.
 # -----------------------------------------------------------------------------------------------------------------
 
 import time
@@ -15,75 +24,63 @@ arcpy.env.overwriteOutput = True         # Overwrites files
 arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported without the join table name
 arcpy.env.XYTolerance = "0.001 Meters"
 
-region = "Oxon"
-# region = "Arc"
-# region = "NP"
-# region = "NP_Wales"
-# Which method are we using - Phase 1 habitat data or LCM and PHI?
-method = "HLU"
-# method = "CROME_PHI"
+#Step 2
+# Choose a dataset
+data_source = "HLU"
+# data_source = "CROME_PHI"
 
-if region == "NP" or region == "NP_Wales":
-    folder = r"M:\urban_development_natural_capital"
-    LAD_folder = r"M:\urban_development_natural_capital\LADs"
-    data_gdb = os.path.join(folder, "Data.gdb")
-    LAD_table = os.path.join(data_gdb, "LADs")
-    # LADs_included = ["Northumberland", "Allerdale", "Carlisle", "Newcastle upon Tyne", "North Tyneside", "South Tyneside", "Sunderland",
-    #                  "Gateshead", "County Durham", "Copeland", "Darlington", "Stockton-on-Tees", "Hartlepool", "Middlesbrough",
-    #                  "Redcar and Cleveland", "Middlesborough" ]
-    # Use either counties or LADs as the list to include by commenting out the appropriate line in the code
-    LADs_included = [ "Richmondshire"]
-    # counties_included = ["Northumberland", "Tyne_and_Wear", "Durham", "Cumbria", "Lancashire",
-    #                      "North_Yorkshire", "South_Yorkshire", "East_Yorkshire", "West_Yorkshire",
-    #                      "Lincolnshire", "Greater_Manchester", "Merseyside", "Cheshire"]
-    counties_included = ["Clwyd", "Gwynedd"]
-    needed_fields = ["fid", "primary_key", "versiondate", "descriptivegroup", "descriptiveterm", "make"]
-    LAD_name_field = "LAD_name_simple"
-    County_field = "County"
-    if region == "NP":
-        PHI = "PHI"
-        PHI_hab_field = "Main_habit"
-    elif region == "NP_Wales":
-        PHI = "NRW_SensitiveHabitats"
-        PHI_hab_field = "Habitat_2"
+Step 3
+# This code will first create a folder structure that it can call from, you will need to go in and put the LAD gdb and
+# the HLU the data in the data gdb and call it "LADs_Input" and "HLU" respectively
+folder = r"C:\Users\zposn\Documents\NBSI\test\Oxon_County"
+os.makedirs(folder)
+data = os.path.join(folder, "Data")
+os.makedirs(data)
+LAD_folder = os.path.join(data, 'LADs_Output')
+os.makedirs(LAD_folder)
+arcpy.management.CreateFileGDB(data, 'Data.gdb')
+data_gdb = os.path.join(data, "Data.gdb")
+LADs_Input = os.path.join(data_gdb, "LADs_Input")
+filemap = input('write DONE once you have input the feature class of LADS labeled LADs_Input into the data.gdb')
+if filemap == 'DONE':
+    print('FILE MAP LAD SET')
+else:
+    input('write DONE once you have input the feature class of LADS labeled LADs_Input into the data.gdb')
+counties_included = ["Oxfordshire"]  # This is for doing whole county in one go
+LADs_included = ["Cherwell", "Oxford", "South Oxfordshire", "Vale of White Horse", "West Oxfordshire"]   # This is for doing separate LADs
+LAD_name_field = "desc_"
+County_field = "county"
 
-elif method == "CROME_PHI":
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
-    data_gdb = os.path.join(folder, "Data\Data.gdb")
-    LAD_table = os.path.join(data_gdb, "Arc_LADs")
-    # arable = os.path.join(data_gdb, "LCM_arable")
-    # improved = os.path.join(data_gdb, "LCM_improved_grassland")
-    if region == "Arc":
-        LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire"]
-    elif region == "Oxon":
-        LADs_included = ["Oxfordshire"]
-    else:
-        print("ERROR: Invalid region")
-        exit()
-    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
+
+if data_source == "CROME_PHI":
+    CROME_Data = os.path.join(data_gdb, 'CROME')
     LAD_name_field = "_desc"
     County_field = "county"
     PHI = "PHI"
     PHI_hab_field = "Main_habit"
 
-elif region == "Oxon" and method == "HLU":
-    # Need to replace OSMM for Oxon in data.gdb for updates
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\Oxon_county"
-    data_gdb = os.path.join(folder, "Data\Data.gdb")
-    LAD_table = os.path.join(data_gdb, "Oxon_LADs")
+elif data_source == "HLU":
     HLU_data = os.path.join(data_gdb, "HLU")
-    counties_included = ["Oxfordshire"]  # This is for doing whole county in one go
-    LADs_included = ["Cherwell", "Oxford", "South Oxfordshire", "Vale of White Horse", "West Oxfordshire"]   # This is for doing separate LADs
-#    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]  # Old version of OSMM
-    needed_fields = ["fid", "theme", "descriptivegroup", "descriptiveterm", "make", "OSMM_hab"]    # Updated for new version of OSMM
-    LAD_name_field = "_desc"
+    HLUfilemap = input('write DONE once you have input the HLU into the newly built data.gdb folder')
+    if HLUfilemap == 'DONE':
+        print('HLU FILEMAP DONE')
+    else:
+        HLUfilemap = input('write DONE once you have input the HLU Data into the newly built data.gdb folder')
+    # Updated for new version of OSMM
+    LAD_name_field = "desc_"
     County_field = "county"
-    PHI = "PHI"  # not needed as using HLU  - not sure why I left this here
-    PHI_hab_field = "Main_habit"   # not needed as using HLU - not sure why I left this here
 
-else:
-    print("ERROR: you cannot currently use the HLU method with the whole Arc region")
-    exit()
+elif data_source == "NP_Wales":
+    CROME_data = os.path.join(data_gdb, "Crome")
+    Walesfilemap = input('write DONE once you have input the WALES CROME Data into the newly built data.gdb folder')
+    if Walesfilemap == 'DONE':
+        print('HLU FILEMAP DONE')
+    else:
+        Walesfilemap = input('write DONE once you have input the WALES CROME Data into the newly built data.gdb folder')
+    PHI = 'NRW_SensitiveHabitats'
+    PHI_hab_field = 'Habitat_2'
+   
+#step 4 - select all necessary preparations for each dataset, the comments will determine which are necessary
 
 LAD_names = []
 
@@ -146,7 +143,7 @@ if prep_PHI:
     MyFunctions.select_and_copy("PHI_union", "PHI", expression, "!WPP!")
 
 if setup_LAD_gdbs:
-    LADs = arcpy.SearchCursor(LAD_table)
+    LADs = arcpy.SearchCursor(LAD_Input)
     for LAD in LADs:
         LAD_full_name = LAD.getValue(LAD_name_field)
         LAD_county = LAD.getValue(County_field)
@@ -184,15 +181,6 @@ if setup_LAD_gdbs:
                 else:    # If OSMM has already been clipped to a feature class called OSMM_LADname (which should be in the current folder)
                     print("  Copying OSMM for " + LAD_name + " to new geodatabase")
                     arcpy.CopyFeatures_management("OSMM_" + LAD_name, out_fc)
-
-            if setup_LCM:    # Note: we don't use LCM (UK CEH Land Cover Map) any more
-                print ("  Clipping Land Cover Map farmland to LAD boundary")
-                out_file = os.path.join(LAD_gdb, "LCM_arable")
-                arcpy.Clip_analysis("LCM_arable", boundary, out_file)
-                MyFunctions.check_and_repair(out_file)
-                out_file = os.path.join(LAD_gdb, "LCM_improved_grassland")
-                arcpy.Clip_analysis("LCM_improved_grassland", boundary, out_file)
-                MyFunctions.check_and_repair(out_file)
 
             if setup_PHI:
                 print ("  Clipping PHI to LAD boundary")
