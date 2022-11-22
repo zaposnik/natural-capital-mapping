@@ -40,7 +40,6 @@ for x in listlads:
     print('Beginning work on ' + x)
     gdb = os.path.join(LADs, x)
     
-for LAD in LADs:
     arcpy.env.workspace = gdb
     gdb_name = x
     OSMM = "OSMM"
@@ -61,7 +60,7 @@ for LAD in LADs:
     check = True
     # Main code
     # ----------
-    print(''.join(["## Started analysing ", gdb, " on : ", time.ctime()]))
+    print(''.join(["## Started analysing ", gdb_name, " on : ", time.ctime()]))
     # Optional step: clip input files. Or this could be done before.
     # Input feature classes must be suffixed with "_in" in order to clip
     if clip_HLU:
