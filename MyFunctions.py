@@ -15,6 +15,7 @@ def check_and_repair(in_file):
     arcpy.CheckGeometry_management(in_file, out_table)
     num_errors = arcpy.GetCount_management(out_table)[0]
     print("      {} geometry problems found, see {} for details.".format(num_errors, out_table))
+    num_errors = int(num_errors)
     if num_errors > 0:
         arcpy.RepairGeometry_management(in_file)
         print ("      Finished repairing geometries ")
