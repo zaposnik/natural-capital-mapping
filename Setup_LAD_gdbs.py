@@ -27,14 +27,14 @@ arcpy.env.XYTolerance = "0.001 Meters"
 #Step 2
 # Choose a dataset
 data_source = "HLU"
-# data_source = "CROME_PHI"
+
 
 Step 3
 # This code will first create a folder structure that it can call from, you will need to go in and put the LAD gdb and
 # the HLU the data in the data gdb and call it "LADs_Input" and "HLU" respectively
-folder = r"C:\Users\zposn\Documents\NBSI\test\Oxon_County"
-os.makedirs(folder)
-data = os.path.join(folder, "Data")
+repository = r"E:\Zach\2022\test"
+os.makedirs(repository)
+data = os.path.join(repository, "Data")
 os.makedirs(data)
 LAD_folder = os.path.join(data, 'LADs_Output')
 os.makedirs(LAD_folder)
@@ -51,6 +51,52 @@ LADs_included = ["Cherwell", "Oxford", "South Oxfordshire", "Vale of White Horse
 LAD_name_field = "desc_"
 County_field = "county"
 
+# set to the highest branch of the OSMM folder before the geodatabases
+tile_folder = r"E:\Zach\2022_OSMM\topo"
+
+# set the name os the feature classes within the OSMM files
+fc_name = "topographicarea"
+
+# set an output space
+OSMM_out_gdb = r"E:\Zach\2022"
+# make a gdb in that folder
+arcpy.management.CreateFileGDB(OSMM_out_gdb, 'OSMM')
+OSMM_out_gdb = os.path.join(OSMM_out_gdb, 'OSMM.gdb')
+
+# set the output name of osmm merge results
+new_fc = "OSMM"
+OSMM_fc = new_fc
+OSMM_fc_prep = os.path.join(data_gdb, new_fc)
+
+#choose settings for the OSMM split
+collate_tiles = True
+merge_tiles = True
+' Split into LADs OR trim to county boundary'
+
+if collate_tiles:
+    arcpy.env.workspace = tile_folder
+    folders = arcpy.ListFiles()
+    print(folders)
+    print(OSMM_out_gdb)
+    i = 0
+    for folder in folders:
+        print(folder)
+        arcpy.env.workspace = os.path.join(tile_folder, folder)
+        i = i + 1
+        clean_name = os.path.splitext(folder)[0]
+        out_fc = os.path.join(OSMM_out_gdb, "OSMM_tile_" + clean_name)
+        print(out_fc)
+        print("    Copying to " + out_fc)
+        arcpy.CopyFeatures_management(fc_name, out_fc)
+        
+if merge_tiles:
+    print ("Merging tiles")
+    arcpy.env.workspace = OSMM_out_gdb
+    in_fcs = arcpy.ListFeatureClasses()
+    arcpy.Merge_management(in_fcs, OSMM_fc_prep)
+    print(''.join(["## Finished merge on : ", time.ctime()]))
+
+print(''.join(["## Finished on : ", time.ctime()]))        
 
 if data_source == "CROME_PHI":
     CROME_Data = os.path.join(data_gdb, 'CROME')
@@ -175,7 +221,7 @@ if setup_LAD_gdbs:
                 if clip_OSMM:
                     print ("  Clipping OSMM to LAD boundary")
                     arcpy.MakeFeatureLayer_management("OSMM", "OSMM_lyr")
-                    arcpy.SelectLayerByLocation_management("OSMM_lyr", "INTERSECT", "boundary")  # To save time select all the intersecting features first
+                    arcpy.SelectLayerByLocation_management("OSMM_lyr", "INTERSECT", boundary)  # To save time select all the intersecting features first
                     arcpy.Clip_analysis("OSMM_lyr", boundary, out_fc)
                     MyFunctions.check_and_repair(out_fc)
                 else:    # If OSMM has already been clipped to a feature class called OSMM_LADname (which should be in the current folder)
