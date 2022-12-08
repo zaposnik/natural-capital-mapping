@@ -106,7 +106,7 @@ elif merge_type == "CROME_PHI":
     elif region == "NP":
         folder = r"M:\urban_development_natural_capital\LADs"
     else:
-        print "Region not found"
+        print("Region not found")
         exit()
     arcpy.env.workspace = folder
     if region == "Arc":
@@ -393,7 +393,7 @@ for gdb in gdbs:
         if tabulate_intersections == True:
 
             # Save ObjectID to separate field as this will be used later (also area, just for info). Check first to see if new fields already added.
-            print "   ## Tabulating intersections"
+            print("   ## Tabulating intersections")
             print("      Saving new feature Index IDs and areas")
             MyFunctions.check_and_add_field("New_snap_clean", new_ID, "LONG", 0)
             arcpy.CalculateField_management("New_snap_clean", new_ID, "!" + NewIndexID + "!", "PYTHON_9.3")
@@ -657,7 +657,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
             numrows = arcpy.GetCount_management("Joint_to_join_joined")
             print ("   Merging " + str(numrows) + " joined rows back into main dataset")
             arcpy.Merge_management(["Joint_sort_OK", "Joint_to_join_joined"], "Joint_done")
-            print "   Sorting geographically to improve display speed"
+            print("   Sorting geographically to improve display speed")
             arcpy.Sort_management("Joint_done", Output_fc, [["SHAPE", "ASCENDING"]], "PEANO")
 
         print("## Completed " + gdb + " on " + time.ctime() + ". Merged feature class name is " + Output_fc + ", rows: "
@@ -702,7 +702,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         error_messages.append(gdb + " failed.\n" + pymsg + "\n" + msgs + "\n")
 
     if len(failed_gdbs) >0:
-        print "Failed so far: " + '\n'.join(failed_gdbs)
-        print "\n".join(error_messages)
+        print("Failed so far: " + '\n'.join(failed_gdbs))
+        print ("\n".join(error_messages))
 
 exit()
