@@ -18,6 +18,7 @@
 import time
 import arcpy
 import MyFunctions
+import os
 
 print(''.join(["## Started on : ", time.ctime()]))
 
@@ -28,28 +29,25 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # Set parameters and workspace here
 # ---------------------------------
 
-# Set LADs equal to the file in which
-LADs = r"C:\Users\zposn\Documents\NBSI\test\Oxon_County\Data\LADs_Output"
+# Set Repository equal to the file in which
+Repository = r"C:\Users\zposn\Documents\NBSI\test\Oxon_County\Data\LADs_Output"
 
-listlads = os.listdir(LADs)
+LADs = os.listdir(LADs)
 
 #this needs to be worked on this doesn't looop iteratively this loops seperately there is a way to integrate just need to have another proper think
-for x in listlads:
-    count = count +1
-    print(count)
-    print('Beginning work on ' + x)
-    gdb = os.path.join(LADs, x)
-    
+for LAD in LADs:
+    print('Beginning work on ' + LAD)
+    gdb = os.path.join(Repository, LAD)
     arcpy.env.workspace = gdb
-    gdb_name = x
+    gdb_name = LAD
     OSMM = "OSMM"
     HLU = "HLU"
+    boundary = "boundary"
     needed_fields = ["fid", "theme", "descriptivegroup", "descriptiveterm", "make", "OSMM_hab"]    # Updated for Fall 2022 version of OSMM
-    HLU_Needed = ["POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]
+    HLU_Needed = ["PolyID", "Phase1Hab", "S41Habitat", "S41Hab2", "Siteref", "Copyright", "Version"] #updated for Fall 2022 version of HLU
     
     # What stages of the code do we want to run? Useful for debugging or updates
-    # Zach- possible we want to write a line of description before each true/false
-    
+
     clip_HLU = False
     clip_OSMM = False
     delete_not_needed_fields_OSMM = True
