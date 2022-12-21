@@ -54,11 +54,12 @@ region = "Oxon"
 # Special case for LNCP project with LERC data
 LNCP_LERC = False
 
+Repository = r"E:\Zach\2022\test\Data\LADs_Output"
+LADs = os.listdir(Repository)
+
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
 if merge_type == "Oxon_OSMM_HLU":
-    # Enter workspace name
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"]
     # names for input base map feature class, new features to be merged with base map, and output feature class
     Base_map_name = "OSMM_noLandform"
     New_features = "HLU_preprocessed"
@@ -67,15 +68,15 @@ if merge_type == "Oxon_OSMM_HLU":
     # (to distinguish them from fields added from previous merges).
     base_tag = "OSMM"
     new_tag = "HLU"
-    # names of key fields in base map and new features
-    base_key = "DescriptiveGroup"
-    new_key = "PHASE1HAB"
+    # names of key fields in base map and new features - make sure capitalization is the same each year
+    base_key = "descriptivegroup"
+    new_key = "Phase1Hab"
     # Enter any other fields you want to be included in the Tabulate Intersection tables
     # WARNING Any fields named the same as any of these fields but with a suffix of "_1*" will be deleted as assumed to be duplicates.
-    base_TI_fields = ["TOID", "FID", "DescriptiveTerm", "Make"]
-    new_TI_fields = ["POLYID", "S41HABITAT"]
+    base_TI_fields = ["PolyID", "fid", "descriptiveterm", "make"]
+    new_TI_fields = ["PolyID", "S41Habitat"]
     # Enter list of all fields in the base map that need to be kept
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
+    Needed = ["PolyID", "theme", "descriptivegroup", "descriptiveterm", "make",
               "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make"]
     # Significant area - polygons will be split if the intersect between base map and new features is larger than this area
     significant_size = 200
@@ -299,11 +300,12 @@ join_new_attributes = True
 i = 0
 failed_gdbs = []
 error_messages = []
-for gdb in gdbs:
+for LAD in LADs:
+    gdb = os.path.join(Repository, LAD)
     arcpy.env.workspace = gdb
     Base_map = Base_map_name
     i = i + 1
-    print (''.join(["## Started processing ", gdb, " which is number " + str(i) + " out of " + str(len(gdbs)) + " on : ", time.ctime()]))
+    print (''.join(["## Started processing ", LAD, " which is number " + str(i) + " out of " + str(len(LADs)) + " on : ", time.ctime()]))
 
     # Temporary correction
     # MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "Interpreted_habitat = 'Saline lagoons'", "'Coastal lagoons'")
@@ -660,7 +662,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
             print("   Sorting geographically to improve display speed")
             arcpy.Sort_management("Joint_done", Output_fc, [["SHAPE", "ASCENDING"]], "PEANO")
 
-        print("## Completed " + gdb + " on " + time.ctime() + ". Merged feature class name is " + Output_fc + ", rows: "
+        print("## Completed " + LAD + " on " + time.ctime() + ". Merged feature class name is " + Output_fc + ", rows: "
               + str(arcpy.GetCount_management(Output_fc)))
 
     # Error handling: record error messages for this gdb and continue with the next one. Most errors are caused by loss of connection
@@ -673,8 +675,8 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         # Print tool error messages for use in Python
         print(msgs)
 
-        failed_gdbs.append(gdb)
-        error_messages.append(gdb + " failed.\n" + msgs + "\n")
+        failed_gdbs.append(LAD)
+        error_messages.append(LAD + " failed.\n" + msgs + "\n")
         # if union_failed:
         #     union_msg = "Union failed. Try to do it manually in ArcMap (try omitting rank and cluster tolerance), " \
         #                 "then comment out the previous steps and restart the code."
@@ -682,7 +684,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         #     error_messages.append(union_msg)
 
     except:
-        failed_gdbs.append(gdb)
+        failed_gdbs.append(LAD)
         # Get the traceback object
         tb = sys.exc_info()[2]
         tbinfo = traceback.format_tb(tb)[0]
@@ -698,8 +700,8 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         # Print Python error messages for use in Python / Python window
         print(pymsg)
         print(msgs)
-        failed_gdbs.append(gdb)
-        error_messages.append(gdb + " failed.\n" + pymsg + "\n" + msgs + "\n")
+        failed_gdbs.append(LAD)
+        error_messages.append(LAD + " failed.\n" + pymsg + "\n" + msgs + "\n")
 
     if len(failed_gdbs) >0:
         print("Failed so far: " + '\n'.join(failed_gdbs))
