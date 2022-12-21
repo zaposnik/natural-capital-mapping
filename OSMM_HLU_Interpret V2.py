@@ -30,14 +30,13 @@ region = "Oxon"
 method = "HLU"
 # method = "OSMM_only"
 
+Repository = r"E:\Zach\2022\test\Data\LADs_Output"
+LADs = os.listdir(Repository)
+
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
-    folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb")]
-    # LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
     in_file_name = "OSMM_HLU"
     Hab_field = "Interpreted_habitat"
-
     # *** Late habitat corrections ***
     # in_file_name = "OSMM_HLU_CR_ALC"
     # Hab_field = "Interpreted_habitat_temp"
@@ -127,7 +126,7 @@ undefined_or_original = "undefined"
 # Check the county from the table of LADs, to identify the list of LADs to process
 LADs = []
 if region == "Oxon":
-    LADs = ["Oxfordshire"]
+    LADs = LADs
 
 elif region == "Arc":
     for LAD in arcpy.SearchCursor(LAD_table):
@@ -153,13 +152,13 @@ else:
 print("LADs to process: " + "\n ".join(LADs))
 
 i=0
-for gdb in gdbs:
-    if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs or region == "NP":
+for LAD in LADs:
+    if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(LAD)[1])[:-4] in LADs or region == "NP":
         i = i + 1
         print "Processing LAD " + str(i) + " out of " + str(len(LADs))
         arcpy.env.workspace = gdb
-        print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
-        in_file = os.path.join(folder, gdb, in_file_name)
+        print(''.join(["## Started interpreting habitats for ", LAD, " ", in_file_name, " on : ", time.ctime()]))
+        in_file = os.path.join(Repository, LAD, in_file_name)
 
         if delete_landform:
             print("  Deleting overlapping 'Landform' and 'Pylon' from OSMM for " + in_file_name)
