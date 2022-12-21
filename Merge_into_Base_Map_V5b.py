@@ -102,54 +102,6 @@ elif merge_type == "Oxon_Designations":
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
 elif merge_type == "CROME_PHI":
-    if region == "Arc" or region == "Oxon":
-        folder = r"D:\cenv0389\OxCamArc\LADs"
-    elif region == "NP":
-        folder = r"M:\urban_development_natural_capital\LADs"
-    else:
-        print("Region not found")
-        exit()
-    arcpy.env.workspace = folder
-    if region == "Arc":
-        # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        gdbs = []
-        gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-        gdbs.append(os.path.join(folder, "Chiltern.gdb"))
-        gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
-        gdbs.append(os.path.join(folder, "Oxford.gdb"))
-        gdbs.append(os.path.join(folder, "Wycombe.gdb"))
-
-    elif region == "NP":
-        # CROME_North dataset done: "NewcastleuponTyne.gdb", "NorthTyneside.gdb", "SouthTyneside.gdb",
-        #                 "Sunderland.gdb",  "Gateshead.gdb", "Darlington.gdb", "Stockton-on-Tees.gdb", "Hartlepool.gdb",
-        #                 "Middlesbrough.gdb", "RedcarandCleveland.gdb", "Allerdale.gdb", "Eden.gdb", "Northumberland.gdb",
-        #                 "CountyDurham.gdb", "Carlisle.gdb"
-        # CROME_East dataset: done. Add back  "Leeds.gdb" if re-doing .
-        # LADs = ["Barnsley.gdb", "Doncaster.gdb", "Rotherham.gdb", "North Lincolnshire.gdb", "North East Lincolnshire.gdb",
-        #         "Scarborough.gdb", "Selby.gdb", "Sheffield.gdb", "Wakefield.gdb", "York.gdb", "Richmondshire.gdb",
-        #         "Hambleton.gdb", "Harrogate.gdb", "Ryedale.gdb", "East Riding of Yorkshire.gdb"]
-        # CROME_North_West dataset done
-        # LADs = ["Lancaster.gdb", "Pendle.gdb", "Ribble Valley.gdb", "Wyre.gdb", "Barrow-in-Furness.gdb", "Bradford.gdb", "Copeland.gdb",
-        #         "Craven.gdb", "South Lakeland.gdb"]
-        # CROME_West dataset Done
-        # "Blackburn with Darwen.gdb", "Blackpool.gdb", "Bolton.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",
-        #                 "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Fylde.gdb", "Halton.gdb", "Hyndburn.gdb",
-        #                 "Kirklees.gdb", "Knowsley.gdb", "Liverpool.gdb", "Manchester.gdb", "Oldham.gdb", "Preston.gdb", "Rochdale.gdb",
-        #                 "Rossendale.gdb","Salford.gdb", "South Ribble.gdb", "Sefton.gdb", "Stockport.gdb", "St Helens.gdb", "Tameside.gdb",
-        #                 "Trafford.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb"]
-        LADs = ["Copeland.gdb"]
-        gdbs = []
-        for LAD in LADs:
-            LAD_name = LAD.replace(" ", "")
-            gdbs.append(os.path.join(folder, LAD_name))
-
-    elif region == "Oxon":
-        gdbs = []
-        LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
-        for LAD in LADs:
-            gdbs.append(os.path.join(folder, LAD))
-
     Base_map_name = "OSMM_CROME"
     New_features = "PHI"
     Output_fc = "OSMM_CROME_PHI"
