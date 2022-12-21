@@ -42,7 +42,7 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # Enter all parameters needed by the code
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
-# merge_type = "Oxon_OSMM_HLU"
+# merge_type = "OSMM_HLU"
 merge_type = "Oxon_Designations"
 # merge_type = "CROME_PHI"
 # merge_type = "Designations"
@@ -59,7 +59,7 @@ LADs = os.listdir(Repository)
 
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
-if merge_type == "Oxon_OSMM_HLU":
+if merge_type == "OSMM_HLU":
     # names for input base map feature class, new features to be merged with base map, and output feature class
     Base_map_name = "OSMM_noLandform"
     New_features = "HLU_preprocessed"
