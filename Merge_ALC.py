@@ -19,11 +19,9 @@ method = "CROME_PHI"
 # method = "HLU"
 
 if region == "Oxon" and method == "HLU":
-    folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder,"Merge_OSMM_HLU_CR_ALC.gdb")]
     base_map_name = "OSMM_HLU_CR"
     out_name = "OSMM_HLU_CR_ALC"
-    ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb\ALC_Union"
+    ALC_data = r"E:\Zach\2022\test\Data\Data.gdb\ALC_Union"
 elif method == "CROME_PHI":
     if region == "Arc":
         folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
@@ -73,15 +71,17 @@ elif method == "CROME_PHI":
         ALC_data = os.path.join(folder, "ALC_Union.shp")
 
 i = 0
-for gdb in gdbs:
-
+Repository = r"E:\Zach\2022\test\Data\LADs_Output"
+LADs = os.listdir(Repository)
+for LAD in LADs:
+    gdb = os.path.join(Repository, LAD)
     arcpy.env.workspace = gdb
     i = i+1
     # Need to define base map here otherwise it keeps repeating the first gdb base map
     base_map = os.path.join(gdb, base_map_name)
 
     numrows = arcpy.GetCount_management(base_map)
-    print ("Processing " + gdb + ". No. " + str(i) + " out of " + str(len(gdbs)) + ". " +
+    print ("Processing " + LAD + ". No. " + str(i) + " out of " + str(len(LADs)) + ". " +
            base_map_name + " has " + str(numrows) + " rows.")
 
     print("    Selecting intensive agriculture polygons from land cover layer")
