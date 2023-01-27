@@ -48,12 +48,9 @@ OS_openGS = "OS_openGS_NP"
 
 # Geodatabase containing the base map and where the outputs will go
 if region == "Oxon" and method == "HLU":
-    work_folder = r"D:\env0389\Oxon_GIS\Oxon_county\NaturalCapital"
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb"]
     Base_map_name = "OSMM_HLU_CR_ALC_Des"
-    boundary = "Oxfordshire"
+    boundary = "boundary"
     Hab_field = "Interpreted_habitat"
-    TOID_field = "toid"
     Base_Index_field = "OBJECTID"
     DescGroup = "DescriptiveGroup"
 elif region == "NP":
@@ -128,11 +125,11 @@ else:
 OpenGS_Index_field = "OBJECTID"
 
 # Which parts of the code do we want to run? For debugging or updating
-merge_GS_files = False
-prep_openGS = False
-clip_OSGS = False
-clip_openGS = False
-copy_base_map = False
+merge_GS_files = True
+prep_openGS = True
+clip_OSGS = True
+clip_openGS = True
+copy_base_map = True
 # Need to trim off "osgb" from beginning of toid? Don't need to do this with most recent version of OSGS
 trim_toid = True
 join_OSGS = True
@@ -171,11 +168,13 @@ if prep_openGS:
     arcpy.DeleteIdentical_management(OS_openGS, ["Shape"])
 
 i = 0
-for gdb in gdbs:
+for LAD in LADs:
+    LAD_Name = LAD.replace('.gdb', '')
+    print('Working in ' + LAD_Name)
+    gdb = os.path.join(repository, LAD)
     i = i + 1
     arcpy.env.workspace = gdb
-    print (''.join(["### Started processing ", gdb, " on : ", time.ctime()]) + " This is number " + str(i) + " out of " + str(len(gdbs)))
-    gdb_name = gdb[:-4]
+    print (''.join(["### Started processing ", LAD_Name, " on : ", time.ctime()]) + " This is number " + str(i) + " out of " + str(len(LADs)))
     if copy_base_map:
         print("    Making copy of base map")
         arcpy.CopyFeatures_management(Base_map_name, Base_map_name + "_GS")
@@ -186,11 +185,11 @@ for gdb in gdbs:
     print ("    " + Base_map + " has " + str(arcpy.GetCount_management(Base_map_name)) + " rows")
 
     if clip_OSGS:
-        print("    Clipping OSGS for " + gdb_name)
+        print("    Clipping OSGS for " + LAD_name)
         arcpy.Clip_analysis(OSGS, boundary, "OSGS")
         print (str(arcpy.GetCount_management("OSGS")) + " rows in OSGS")
     if clip_openGS:
-        print("    Clipping OS open GS for " + gdb_name)
+        print("    Clipping OS open GS for " + LAD_name)
         arcpy.Clip_analysis(os.path.join(Open_GS_gdb, OS_openGS), boundary, "OS_Open_GS")
         print (str(arcpy.GetCount_management("OS_Open_GS")) + " rows in OS Open_GS")
 
@@ -211,7 +210,7 @@ for gdb in gdbs:
         # Now join the field
         print ("      Joining OSGS table to base map")
         arcpy.MakeFeatureLayer_management(Base_map, "join_lyr")
-        arcpy.AddJoin_management("join_lyr", TOID_field, "OSGS", join_field)
+        arcpy.AddJoin_management("join_lyr", "fid", "OSGS", join_field)
 
         # Copy over prifunc and secfunc
         print ("      Copying primary and secondary GS functions to base map")
@@ -326,6 +325,6 @@ for gdb in gdbs:
 
         # We do not copy over Amenity - Transport because that should be already identified as Road verge from OSMM
 
-    print("### Completed " + gdb_name + " on : " + time.ctime())
+    print("### Completed " + LAD_Name + " on : " + time.ctime())
 
 exit()
