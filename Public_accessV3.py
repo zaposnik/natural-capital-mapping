@@ -206,10 +206,10 @@ if create_access_layer:
                     if clip_region:
                         print("Clipping " + in_file)
                         arcpy.Clip_analysis(in_file, region_boundary, in_file + area_tag)
-                    if area_tag <> "":
+                    if area_tag != "":
                         in_file = in_file + area_tag
                     InPaths.append(in_file)
-            print "Merging paths"
+            print("Merging paths")
             arcpy.Merge_management(InPaths, "Paths_merge")
             print("Buffering and dissolving merged paths")
             # If paths won't buffer, split by LAD and do separately
@@ -219,16 +219,16 @@ if create_access_layer:
                     arcpy.env.workspace = gdb
                     numrows = arcpy.GetCount_management(os.path.join(gdb, base_map))
                     print ("Buffering paths for " + gdb)
-                    print("   Clipping paths")
+                    print ("   Clipping paths")
                     arcpy.Clip_analysis(os.path.join(data_gdb,"Paths_merge"), boundary, "Paths_merge_clip")
-                    print "   Buffering paths"
+                    print("   Buffering paths")
                     arcpy.Buffer_analysis("Paths_merge_clip", "Paths_merge_buffer", buffer_distance, dissolve_option="ALL")
                     # Append to merged path dataset
-                    print "   Appending"
+                    print("   Appending")
                     arcpy.Append_management("Paths_merge_buffer", os.path.join(data_gdb,"Paths_merge_buffer_temp_append"))
                 arcpy.env.workspace = data_gdb
                 # If this crashes it may work manually in ArcGIS
-                print "Dissolving merged paths"
+                print ("Dissolving merged paths")
                 arcpy.Dissolve_management("Paths_merge_buffer_temp_append", "Paths_merge_buffer")
             # Add PAType
             print("Adding Type field")
@@ -258,7 +258,7 @@ if create_access_layer:
                 if clip_region:
                     print("Clipping " + in_file)
                     arcpy.Clip_analysis(in_file, region_boundary, in_file + area_tag)
-                if area_tag <> "":
+                if area_tag != "":
                     in_file = in_file + area_tag
                 if Path == 1:
                     if buffer_paths:
@@ -328,12 +328,12 @@ if create_access_layer:
         # Erase any paths that are within the accessible areas or private (military) areas, to reduce the complexity of the merged shapes
         print ("Erasing paths within areas")
         arcpy.Merge_management(["Access_areas_merge", "OSM_military"], "Access_areas_to_erase")
-        print "  Buffering and dissolving areas to erase (to remove internal slivers and simplify shapes)"
+        print ("  Buffering and dissolving areas to erase (to remove internal slivers and simplify shapes)")
         arcpy.Buffer_analysis("Access_areas_to_erase", "Access_areas_to_erase_buff_diss", "1 Meters", dissolve_option="ALL")
-        print "  Converting to single part"
+        print ("  Converting to single part")
         arcpy.MultipartToSinglepart_management("Access_areas_to_erase_buff_diss", "Access_areas_to_erase_buff_diss_sp")
         MyFunctions.check_and_repair("Access_areas_to_erase_buff_diss_sp")
-        print "  Erasing..."
+        print ("  Erasing...")
         try:
             arcpy.Erase_analysis("Paths_merge_buffer_sp", "Access_areas_to_erase_buff_diss_sp", "Access_paths_erase")
         except:
@@ -454,7 +454,7 @@ for gdb in gdbs:
     # *** TEMPORARY Correction for NP because access field was omitted accidentally when I made the designations layer
     if NT_correction and region == "NP":
         # select NT polygons and spatially join to a dataset containing only the NT access description
-        print "    Correcting by adding in missing NT access field"
+        print ("    Correcting by adding in missing NT access field")
         arcpy.MakeFeatureLayer_management(base_map + "_merge", "NT_lyr")
         arcpy.SelectLayerByAttribute_management("NT_lyr", where_clause="NT = 1")
         arcpy.SpatialJoin_analysis("NT_lyr", os.path.join(data_gdb, "NT_access"), "NT_access")
@@ -514,7 +514,7 @@ for gdb in gdbs:
         # Green spaces (from OS green space and OS open green space) - correct for Rail in OSGS Amenity residential
         # Exclude National Trust as that has better information on access, so we don't want to overwrite it
         # Also exclude arable land (added 4/10/2020 at end of EA work) otherwise incorrect OSGS 'Amenity' over-rides habitat type
-        print "      Interpreting green space"
+        print ("      Interpreting green space")
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "sel_lyr4")
         expression = hab_field + " NOT IN ('Arable', 'Arable and scattered trees', 'Arable fields, horticulture and temporary grass') "
         expression = expression + "AND GreenSpace IS NOT NULL AND GreenSpace <> '' "
@@ -531,7 +531,7 @@ for gdb in gdbs:
         arcpy.Delete_management("sel_lyr4")
 
         # Correction for school grounds from OSGS because playing fields were omitted (this will omit non-urban schools not in OSGS)
-        print "      Interpreting schools"
+        print ("      Interpreting schools")
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "school_lyr")
         arcpy.SelectLayerByAttribute_management("school_lyr", where_clause="OSGS_priFunc = 'School Grounds'")
         if arcpy.GetCount_management("school_lyr") > 0:
@@ -545,7 +545,7 @@ for gdb in gdbs:
         arcpy.Delete_management("school_lyr")
 
         # Add in full accessibility for rivers, lakes, reservoirs, weirs and canals. Correction made 4 Oct 2020.
-        print "      Interpreting water"
+        print ("      Interpreting water")
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "water_lyr")
         expression = DescTerm + " IN ('Watercourse', 'Static Water', 'Canal', 'Weir', 'Reservoir')"
         arcpy.SelectLayerByAttribute_management("water_lyr", where_clause=expression)
