@@ -35,7 +35,7 @@ LADs = os.listdir(Repository)
 
 if region == "Oxon" and method == "HLU":
     boundary = "boundary"
-    base_map = "OSMM_HLU_CR_ALC_Des_GS"
+    base_map = "OSMM_HLU_CR_ALC_Desig_GS"
     area_tag = "_Oxon"
     hab_field = "Interpreted_habitat"
     # Name of OSMM fields used for interpretation
