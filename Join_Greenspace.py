@@ -35,20 +35,20 @@ method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
 # OSGS_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS"
-OSGS_folder = r"M:\urban_development_natural_capital\osmm_greenspace\tiles"
-OSGS = r"M:\urban_development_natural_capital\osmm_greenspace\OSGS_Feb2021.gdb\OSMM_GS_NP"
+OSGS_folder = r"E:\Zach\2022_OSMM\greenspace"
+OSGS = r"E:\Zach\2022\test\Data\OSGS.gdb\OSGS"
 
 # Open GS input file must be a gdb feature class so that there is a Shape_Area field for sorting
 # Open_GS_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS\OS_GS.gdb"
-Open_GS_gdb = r"D:\cenv0389\UK_data\OS_OpenGS_2019.gdb"
+Open_GS_gdb = r"E:\Zach\2022\test\Data\Open_GS_gdb.gdb"
 # OS_openGS_in = os.path.join(Open_GS_gdb, "OS_openGS_Arc_in")
 # OS_openGS = "OS_openGS_Arc_union"
-OS_openGS_in = os.path.join(Open_GS_gdb, "OS_open_greenspace")
-OS_openGS = "OS_openGS_NP"
+OS_openGS_in = os.path.join(Open_GS_gdb, "OS_openGS_in")
+OS_openGS = "OS_openGS"
 
 # Geodatabase containing the base map and where the outputs will go
 if region == "Oxon" and method == "HLU":
-    Base_map_name = "OSMM_HLU_CR_ALC_Des"
+    Base_map_name = "OSMM_HLU_CR_ALC_Desig"
     boundary = "boundary"
     Hab_field = "Interpreted_habitat"
     Base_Index_field = "OBJECTID"
