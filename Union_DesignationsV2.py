@@ -18,8 +18,8 @@ region = "Oxon"
 # region = "NP"
 
 if region == "Oxon":
-    in_folder = r"D:\cenv0389\Oxon_GIS\Designations\UnionInputs"
-    Union_gdb = r"D:\cenv0389\Oxon_GIS\Designations\Union_Designations.gdb"
+    in_folder = r"E:\Zach\2022\test\Data\Designations_2022"
+    Union_gdb = r"E:\Zach\2022\test\Data\Designations_2022\Union_Designations.gdb"
     habitat_field = True
 elif region == "Arc":
     in_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data"
