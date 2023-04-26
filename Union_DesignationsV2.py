@@ -91,7 +91,7 @@ for LAD in LADs:
         arcpy.env.workspace = In_gdb
 
         ShortName = row.getValue("ShortName")
-        NewFile = ShortName + "_input"
+        NewFile = ShortName + "_input" + LAD_Name
         new_name = ShortName + '_name'
         hab_name = ShortName + "_hab"
         desc_name = ShortName + "_desc"
@@ -153,10 +153,10 @@ for LAD in LADs:
             if union_GB:
                 # Special treatment for green belt - union with no gaps and tolerance 10m then delete gaps to remove internal slivers
                 # First check if there is already a field called FID_GB_input_diss from an earlier step, and delete if there is
-                if "FID_GB_input_diss" in arcpy.ListFields("GB_input_diss"):
+                if ("FID_GB_input" + LAD_Name + "_diss") in arcpy.ListFields("GB_input" + LAD_Name + "_diss"):
                     arcpy.DeleteField_management("GB_input_diss", "FID_GB_input_diss")
-                arcpy.Union_analysis([["GB_input_diss", 1]],"GB_input_diss_union", "ALL", 10, "NO_GAPS" )
-                arcpy.MakeFeatureLayer_management("GB_input_diss_union", "gap_lyr")
+                arcpy.Union_analysis([["GB_input" + LAD_Name +"_diss", 1]], ("GB_input" + LAD_Name + "_diss_union"), "ALL", 10, "NO_GAPS")
+                arcpy.MakeFeatureLayer_management(("GB_input" + LAD_Name + "_diss_union"), "gap_lyr")
                 arcpy.SelectLayerByAttribute_management("gap_lyr", where_clause="FID_GB_input_diss = -1")
                 arcpy.DeleteFeatures_management("gap_lyr")
                 arcpy.Delete_management("gap_lyr")
@@ -165,11 +165,11 @@ for LAD in LADs:
             unionInFiles.append(NewFile + "_diss")
 
     if Setup_union_file:
-        print "Setting up union file"
+        print("Setting up union file")
         # Add new fields to first dataset to be unioned.  Use Green Belt because that is the most accurate
         # Note: set the field length to accommodate the longest input, otherwise truncation characters cause
         # problems with 'calculate field' later on
-        starting_file = "GB_input_diss_union"
+        starting_file = "GB_input" + LAD_Name + "_diss_union"
         # First add the overall type, name, description and habitat fields
         MyFunctions.check_and_add_field(starting_file, "Type", "TEXT", start_len)
         MyFunctions.check_and_add_field(starting_file, "Name", "TEXT", name_len)
@@ -196,8 +196,9 @@ for LAD in LADs:
     # was wrong, so i have put it before this step to see if it helps in future
     arcpy.env.workspace = Union_gdb
     if union_files:
-        print ("Unioning: \n" + '\n'.join(unionInFiles))
-        arcpy.Union_analysis(unionInFiles, "Desig_union", "ALL", 0.1, "NO_GAPS")
+        print("Unioning: \n" + '\n'.join(unionInFiles))
+        Desig_union = "Design_union" +LAD_Name
+        arcpy.Union_analysis(unionInFiles, Desig_union, "ALL", 0.1, "NO_GAPS")
 
     # Now copy the fields for the other designation types into the right order
     # arcpy.env.workspace = Union_gdb   # moved above
@@ -208,42 +209,42 @@ for LAD in LADs:
         if ShortName <> "GB":
             print ("Tidying field order for " + ShortName)
             MedName = row.getValue("NewName")
-            MyFunctions.check_and_add_field("Desig_union", MedName, "SHORT", 0)
+            MyFunctions.check_and_add_field(Desig_union, MedName, "SHORT", 0)
 
             new_name = ShortName + '_name'
-            MyFunctions.check_and_add_field("Desig_union", new_name + "_temp", "TEXT", name_len)
-            arcpy.CalculateField_management("Desig_union", new_name + "_temp", "!" + new_name + "!", "PYTHON_9.3")
-            arcpy.DeleteField_management("Desig_union", new_name)
-            arcpy.AddField_management("Desig_union", new_name, "TEXT", name_len)
-            arcpy.CalculateField_management("Desig_union", new_name, "!" + new_name + "_temp!", "PYTHON_9.3")
-            arcpy.DeleteField_management("Desig_union", new_name + "_temp")
+            MyFunctions.check_and_add_field(Desig_union, new_name + "_temp", "TEXT", name_len)
+            arcpy.CalculateField_management(Desig_union, new_name + "_temp", "!" + new_name + "!", "PYTHON_9.3")
+            arcpy.DeleteField_management(Desig_union, new_name)
+            arcpy.AddField_management(Desig_union, new_name, "TEXT", name_len)
+            arcpy.CalculateField_management(Desig_union, new_name, "!" + new_name + "_temp!", "PYTHON_9.3")
+            arcpy.DeleteField_management(Desig_union, new_name + "_temp")
 
             if desc_field:
                 DescField = row.getValue("DescField")
                 if DescField:
                     desc_name = ShortName + "_desc"
-                    MyFunctions.check_and_add_field("Desig_union", desc_name + "_temp", "TEXT", desc_len)
+                    MyFunctions.check_and_add_field(Desig_union, desc_name + "_temp", "TEXT", desc_len)
                     # Truncate the description field at the correct length (minus 1) because some fields have truncation error characters
                     # which cause CalculateField to crash (specifically, LGS in Oxon)
                     expression = "!" + desc_name + "![:" + str(desc_len - 1) + "]"
-                    arcpy.CalculateField_management("Desig_union", desc_name + "_temp", expression, "PYTHON_9.3")
-                    arcpy.DeleteField_management("Desig_union", desc_name)
-                    arcpy.AddField_management("Desig_union", desc_name, "TEXT", desc_len)
-                    arcpy.CalculateField_management("Desig_union", desc_name, "!" + desc_name + "_temp!", "PYTHON_9.3")
-                    arcpy.DeleteField_management("Desig_union", desc_name + "_temp")
+                    arcpy.CalculateField_management(Desig_union, desc_name + "_temp", expression, "PYTHON_9.3")
+                    arcpy.DeleteField_management(Desig_union, desc_name)
+                    arcpy.AddField_management(Desig_union, desc_name, "TEXT", desc_len)
+                    arcpy.CalculateField_management(Desig_union, desc_name, "!" + desc_name + "_temp!", "PYTHON_9.3")
+                    arcpy.DeleteField_management(Desig_union, desc_name + "_temp")
 
             if habitat_field:
                 HabField = row.getValue("HabField")
                 if HabField:
                     hab_name = ShortName + "_hab"
-                    MyFunctions.check_and_add_field("Desig_union", hab_name + "_temp", "TEXT", hab_len)
-                    arcpy.CalculateField_management("Desig_union", hab_name + "_temp", "!" + hab_name + "!", "PYTHON_9.3")
-                    arcpy.DeleteField_management("Desig_union", hab_name)
-                    arcpy.AddField_management("Desig_union", hab_name, "TEXT", hab_len)
-                    arcpy.CalculateField_management("Desig_union", hab_name, "!" + hab_name + "_temp!", "PYTHON_9.3")
-                    arcpy.DeleteField_management("Desig_union", hab_name + "_temp")
+                    MyFunctions.check_and_add_field(Desig_union, hab_name + "_temp", "TEXT", hab_len)
+                    arcpy.CalculateField_management(Desig_union, hab_name + "_temp", "!" + hab_name + "!", "PYTHON_9.3")
+                    arcpy.DeleteField_management(Desig_union, hab_name)
+                    arcpy.AddField_management(Desig_union, hab_name, "TEXT", hab_len)
+                    arcpy.CalculateField_management(Desig_union, hab_name, "!" + hab_name + "_temp!", "PYTHON_9.3")
+                    arcpy.DeleteField_management(Desig_union, hab_name + "_temp")
 
-    MyFunctions.check_and_add_field("Desig_union", "NumDesig", "SHORT", 0)
+    MyFunctions.check_and_add_field(Desig_union, "NumDesig", "SHORT", 0)
     print('Copying Designated Union to LAD')
     outlayer = os.path.join(gdb, 'Desig_union')
     arcpy.management.CopyFeatures(Desig_union, outlayer)
