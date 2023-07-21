@@ -42,41 +42,37 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # Enter all parameters needed by the code
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
-# merge_type = "Oxon_OSMM_HLU"
-merge_type = "Oxon_Designations"
+# merge_type = "OSMM_HLU"
+# merge_type = "Oxon_Designations"
 # merge_type = "CROME_PHI"
 # merge_type = "Designations"
 # merge_type = "Arc_access"
 
-region = "Oxon"
+# region = "Oxon"
 # region = "Arc"
 # region = "NP"
 # Special case for LNCP project with LERC data
 LNCP_LERC = False
 
+Repository = r"Z:\NatCap_OS_v2\Data\LADs_Output"
+LADs = os.listdir(Repository)
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
-if merge_type == "Oxon_OSMM_HLU":
-    # Enter workspace name
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"]
-    # names for input base map feature class, new features to be merged with base map, and output feature class
+if merge_type == "OSMM_HLU":
     Base_map_name = "OSMM_noLandform"
     New_features = "HLU_preprocessed"
     Output_fc = "OSMM_HLU"
-    # short tags (< 8 characters, no spaces) for base map and new features, to be used for naming new fields
-    # (to distinguish them from fields added from previous merges).
     base_tag = "OSMM"
     new_tag = "HLU"
     # names of key fields in base map and new features
-    base_key = "DescriptiveGroup"
-    new_key = "PHASE1HAB"
+    base_key = "descriptivegroup"
+    new_key = "Phase11Hab"
     # Enter any other fields you want to be included in the Tabulate Intersection tables
     # WARNING Any fields named the same as any of these fields but with a suffix of "_1*" will be deleted as assumed to be duplicates.
-    base_TI_fields = ["TOID", "FID", "DescriptiveTerm", "Make"]
-    new_TI_fields = ["POLYID", "S41HABITAT"]
+    base_TI_fields = ["PolyID", "fid", "descriptiveterm", "make"]
+    new_TI_fields = ["PolyID", "S41Habitat"]
     # Enter list of all fields in the base map that need to be kept
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
-              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make"]
+    Needed = ["fid", "theme", "descriptivegroup", "descriptiveterm", "S41Habitat", "make", "PolyID"]
     # Significant area - polygons will be split if the intersect between base map and new features is larger than this area
     significant_size = 200
     # Distances to snap new feature edges and vertices to base map. If too high, get distortions; if too low get slivers and messy edges
@@ -84,7 +80,6 @@ if merge_type == "Oxon_OSMM_HLU":
     # better results (33,000 out of 86,000 HLU polygons matching OSMM as opposed to about 3,000!)
     snap_env = [[Base_map_name, "VERTEX", "0.5 Meters"], [Base_map_name, "EDGE", "1 Meters"], [Base_map_name, "VERTEX", "1 Meters"]]
 elif merge_type == "Oxon_Designations":
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_Designations.gdb"]
     Base_map_name = "OSMM_HLU_CR_ALC"
     New_features = "Designations"
     Output_fc = "OSMM_HLU_CR_ALC_Desig"
@@ -94,63 +89,16 @@ elif merge_type == "Oxon_Designations":
     new_key = "Type"
     base_TI_fields = []
     new_TI_fields = ["Name"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
-              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
-              "POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
-              "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
+    Needed = ["fid", "theme", "descriptivegroup", "descriptiveterm", "make",
+              "ORIG_FID", "OSMM_OBJID", "OSMM_Area", "OSMM_Relationship","FID_HLU_Manerase","fid", "versiondate",
+              "PolyID", "Phase1Hab", "S41Habitat", "S41Hab2",
+              "Siteref", "Copyright", "Version", "OSMM_hab", "HLU_hab", "HLU_OBJID", "HLU_Area", "OSMM_Relationship", "ORIG_FID_12_13",
+              "BaseID_CROME", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
 elif merge_type == "CROME_PHI":
-    if region == "Arc" or region == "Oxon":
-        folder = r"D:\cenv0389\OxCamArc\LADs"
-    elif region == "NP":
-        folder = r"M:\urban_development_natural_capital\LADs"
-    else:
-        print "Region not found"
-        exit()
-    arcpy.env.workspace = folder
-    if region == "Arc":
-        # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        gdbs = []
-        gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-        gdbs.append(os.path.join(folder, "Chiltern.gdb"))
-        gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
-        gdbs.append(os.path.join(folder, "Oxford.gdb"))
-        gdbs.append(os.path.join(folder, "Wycombe.gdb"))
-
-    elif region == "NP":
-        # CROME_North dataset done: "NewcastleuponTyne.gdb", "NorthTyneside.gdb", "SouthTyneside.gdb",
-        #                 "Sunderland.gdb",  "Gateshead.gdb", "Darlington.gdb", "Stockton-on-Tees.gdb", "Hartlepool.gdb",
-        #                 "Middlesbrough.gdb", "RedcarandCleveland.gdb", "Allerdale.gdb", "Eden.gdb", "Northumberland.gdb",
-        #                 "CountyDurham.gdb", "Carlisle.gdb"
-        # CROME_East dataset: done. Add back  "Leeds.gdb" if re-doing .
-        # LADs = ["Barnsley.gdb", "Doncaster.gdb", "Rotherham.gdb", "North Lincolnshire.gdb", "North East Lincolnshire.gdb",
-        #         "Scarborough.gdb", "Selby.gdb", "Sheffield.gdb", "Wakefield.gdb", "York.gdb", "Richmondshire.gdb",
-        #         "Hambleton.gdb", "Harrogate.gdb", "Ryedale.gdb", "East Riding of Yorkshire.gdb"]
-        # CROME_North_West dataset done
-        # LADs = ["Lancaster.gdb", "Pendle.gdb", "Ribble Valley.gdb", "Wyre.gdb", "Barrow-in-Furness.gdb", "Bradford.gdb", "Copeland.gdb",
-        #         "Craven.gdb", "South Lakeland.gdb"]
-        # CROME_West dataset Done
-        # "Blackburn with Darwen.gdb", "Blackpool.gdb", "Bolton.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",
-        #                 "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Fylde.gdb", "Halton.gdb", "Hyndburn.gdb",
-        #                 "Kirklees.gdb", "Knowsley.gdb", "Liverpool.gdb", "Manchester.gdb", "Oldham.gdb", "Preston.gdb", "Rochdale.gdb",
-        #                 "Rossendale.gdb","Salford.gdb", "South Ribble.gdb", "Sefton.gdb", "Stockport.gdb", "St Helens.gdb", "Tameside.gdb",
-        #                 "Trafford.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb"]
-        LADs = ["Copeland.gdb"]
-        gdbs = []
-        for LAD in LADs:
-            LAD_name = LAD.replace(" ", "")
-            gdbs.append(os.path.join(folder, LAD_name))
-
-    elif region == "Oxon":
-        gdbs = []
-        LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
-        for LAD in LADs:
-            gdbs.append(os.path.join(folder, LAD))
-
     Base_map_name = "OSMM_CROME"
-    New_features = "PHI"
+    New_features = "PHI_union"
     Output_fc = "OSMM_CROME_PHI"
     base_tag = "OSMM_CROME"
     new_tag = "PHI"
@@ -158,66 +106,17 @@ elif merge_type == "CROME_PHI":
     new_key = "PHI"
     base_TI_fields = ["fid"]
     new_TI_fields = ["WPP", "OMHD"]
-    Needed = ["TOID", "DescriptiveGroup", "DescriptiveTerm", "Make",
-              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
+    Needed = ["fid", "descriptivegroup", "descriptiveterm", "make",
+            "versiondate", "theme",
               "OSMM_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple"]
     significant_size = 200
     snap_env = [[Base_map_name, "VERTEX", "0.5 Meters"], [Base_map_name, "EDGE", "1 Meters"], [Base_map_name, "VERTEX", "1 Meters"]]
 elif merge_type == "Designations":
-    # Folder containing gdbs to process and names of gdbs to process
-    if region == "Arc":
-        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
-        arcpy.env.workspace = folder
-        gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs = []
-        # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-    elif region == "NP":
-        folder = r"M:\urban_development_natural_capital\LADs"
-        arcpy.env.workspace = folder
-        # "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb", "Bolton.gdb",
-        #  "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb", "Cheshire West and Chester.gdb",
-        #  "Chorley.gdb",  "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
-        # "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb"
-        # "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb", "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb",
-        # "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",  "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb",
-        # "North Tyneside.gdb", "Oldham.gdb",
-        # "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb", "Richmondshire.gdb",
-        # "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb", "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb",
-        # "South Lakeland.gdb", "South Ribble.gdb", "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-        # Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wyre.gdb", "York.gdb",
-
-        LADs = [ "Copeland.gdb"]
-
-        gdbs = []
-        for LAD in LADs:
-            LAD_name = LAD.replace(" ", "")
-            gdbs.append(os.path.join(folder, LAD_name))
-    elif region == "Oxon":
-        folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Natural_capital\LADs"
-        gdbs = []
-        # *** Not set up yet - so far have just done whole county - see above under option 'Oxon_designations'!!
-        LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
-        for LAD in LADs:
-            gdbs.append(os.path.join(folder, LAD))
-    # Location of input file containing designations
-    if region == "Oxon" or region == "Arc":
-        New_in = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb\Designations_tidy"
-    elif region == "NP":
-        New_in = r"M:\urban_development_natural_capital\Data.gdb\Designations_tidy"
-    New_features = "Designations"
-    if LNCP_LERC:
-        Base_map_name = "LERC_ALC"
-        Output_fc = "LERC_ALC_Desig"
-        Needed = ["Toid", "DescGroup", "DescTerm", "make", "GI_type", "LWS_p", "AccessGI", "LCM_type", "GI_Type_Final",
-                  "Accessible", "Ph1code", "Ph1code_1", "Ph1code_12", "HabNmPLUS_1", "HabBroad_1", "Ph1ColBestFit", "HabType2_1",
-                  "Interpreted_habitat", "ALC_GRADE"]
-    else:
-        Base_map_name = "OSMM_CR_PHI_ALC"
-        Output_fc = "OSMM_CR_PHI_ALC_Desig"
-        Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
-                  "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
+    Base_map_name = "OSMM_CR_PHI_ALC"
+    Output_fc = "OSMM_CR_PHI_ALC_Desig"
+    Needed = ["fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
                   "OSMM_hab", "CROME_desc", "CROME_simple", "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
+    New_features = "Designations"
     base_tag = "Base"
     new_tag = "Desig"
     base_key = "Interpreted_habitat"
@@ -253,10 +152,8 @@ else:
     exit()
 
 # CAUTION: Provide the name of the Index fields. This is usually but not always OBJECTID. Check aliases!
-if LNCP_LERC:
-    BaseIndexID = "OBJECTID_1"
-else:
-    BaseIndexID = "OBJECTID"
+
+BaseIndexID = "OBJECTID"
 NewIndexID = "OBJECTID"
 
 new_ID = new_tag + "_OBJID"
@@ -283,12 +180,12 @@ split_overlap = 0.95
 xy_tol = "0.001 Meters"
 
 # Which sections of code do we want to run? For de-bugging or updating - no point repeating sections already completed.
-sp_base = False                # Convert input base map to single part
-if merge_type == "Designations" or merge_type == "Arc_access" or merge_type == "Arc_access":
-    clip_new = True               # Clip new features to exact boundary of region, usually True unless restarting during debugging
-else:
-    clip_new = False
-snap_new_features = False      # No need to snap if input features are consistent with base map geometry
+sp_base = True              # Convert input base map to single part
+# if merge_type == "Designations" or merge_type == "Arc_access" or merge_type == "Arc_access":
+    #clip_new = True               # Clip new features to exact boundary of region, usually True unless restarting during debugging
+#else:
+clip_new = False
+snap_new_features = True      # No need to snap if input features are consistent with base map geometry
 tabulate_intersections = True
 make_joint_shapes = True
 repair_before_elim = True    # This may not be needed
@@ -299,11 +196,12 @@ join_new_attributes = True
 i = 0
 failed_gdbs = []
 error_messages = []
-for gdb in gdbs:
+for LAD in LADs:
+    gdb = os.path.join(Repository, LAD)
     arcpy.env.workspace = gdb
     Base_map = Base_map_name
     i = i + 1
-    print (''.join(["## Started processing ", gdb, " which is number " + str(i) + " out of " + str(len(gdbs)) + " on : ", time.ctime()]))
+    print (''.join(["## Started processing ", LAD, " which is number " + str(i) + " out of " + str(len(LADs)) + " on : ", time.ctime()]))
 
     # Temporary correction
     # MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "Interpreted_habitat = 'Saline lagoons'", "'Coastal lagoons'")
@@ -660,7 +558,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
             print "   Sorting geographically to improve display speed"
             arcpy.Sort_management("Joint_done", Output_fc, [["SHAPE", "ASCENDING"]], "PEANO")
 
-        print("## Completed " + gdb + " on " + time.ctime() + ". Merged feature class name is " + Output_fc + ", rows: "
+        print("## Completed " + LAD + " on " + time.ctime() + ". Merged feature class name is " + Output_fc + ", rows: "
               + str(arcpy.GetCount_management(Output_fc)))
 
     # Error handling: record error messages for this gdb and continue with the next one. Most errors are caused by loss of connection
@@ -673,8 +571,8 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         # Print tool error messages for use in Python
         print(msgs)
 
-        failed_gdbs.append(gdb)
-        error_messages.append(gdb + " failed.\n" + msgs + "\n")
+        failed_gdbs.append(LAD)
+        error_messages.append(LAD + " failed.\n" + msgs + "\n")
         # if union_failed:
         #     union_msg = "Union failed. Try to do it manually in ArcMap (try omitting rank and cluster tolerance), " \
         #                 "then comment out the previous steps and restart the code."
@@ -682,7 +580,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         #     error_messages.append(union_msg)
 
     except:
-        failed_gdbs.append(gdb)
+        failed_gdbs.append(LAD)
         # Get the traceback object
         tb = sys.exc_info()[2]
         tbinfo = traceback.format_tb(tb)[0]
@@ -698,8 +596,8 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         # Print Python error messages for use in Python / Python window
         print(pymsg)
         print(msgs)
-        failed_gdbs.append(gdb)
-        error_messages.append(gdb + " failed.\n" + pymsg + "\n" + msgs + "\n")
+        failed_gdbs.append(LAD)
+        error_messages.append(LAD + " failed.\n" + pymsg + "\n" + msgs + "\n")
 
     if len(failed_gdbs) >0:
         print "Failed so far: " + '\n'.join(failed_gdbs)
