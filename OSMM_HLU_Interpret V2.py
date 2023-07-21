@@ -19,31 +19,17 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-# *** Enter parameters here
-# -------------------------
-# region = "Arc"
-region = "Oxon"
-# region = "Blenheim"
-# region = "NP"
 
 # method = "CROME_PHI"
 method = "HLU"
-# method = "OSMM_only"
 
-if region == "Oxon" and method == "HLU":
-    # Operate in the Oxon_county folder
-    folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb")]
-    # LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
+repository = r"Z:\NatCap_OS_v2\Data\LADs_Output"
+LADs = os.listdir(repository)
+if method == "HLU":
     in_file_name = "OSMM_HLU"
     Hab_field = "Interpreted_habitat"
-
-    # *** Late habitat corrections ***
-    # in_file_name = "OSMM_HLU_CR_ALC"
-    # Hab_field = "Interpreted_habitat_temp"
-
-    in_hab_field = "PHASE1HAB"   # Zach - change
-    BAP_field = "S41HABITAT"      # change
+    in_hab_field = "PHASE1HAB"
+    BAP_field = "S41HABITAT"
     # Which stages of the code do we want to run? Useful for debugging or updating.
     delete_landform = True
     add_OSMM_hab = True
@@ -53,70 +39,16 @@ if region == "Oxon" and method == "HLU":
     interpret_BAP = True
 
 elif method == "CROME_PHI":
-    folder = r"D:\cenv0389\OxCamArc\LADs"
-    arcpy.env.workspace = folder
-    gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-    LAD_table = r"D:\cenv0389\OxCamArc\Arc_LADs_sort.shp"
     in_file_name = "OSMM"
     Hab_field = "Interpreted_habitat"
-    if region == "Arc":
-        LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire", "Oxfordshire", "Peterborough"]
-    elif region == "Oxon":
-        LADs_included = ["Oxfordshire"]
-    else:
-        print("ERROR: Invalid region")
-        exit()
     # We only want to run delete_landform and simplify_OSMM.
     delete_landform = True
-    add_OSMM_hab = False
+    add_OSMM_hab = True
     simplify_OSMM = True
     simplify_HLU = False
     select_HLU_or_OSMM = False
     interpret_BAP = False
 
-elif method == "OSMM_only":
-    if region == "Oxon":
-        folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-        gdbs = ["OSMM_Aug2020.gdb"]
-        in_file_name = "OSMM_Oxon_Aug2020_clip"
-        Hab_field = "Interpreted_habitat"
-        LADs_included = ["Oxfordshire"]
-    elif region == "NP":
-        folder = r"M:\urban_development_natural_capital\LADs"
-        arcpy.env.workspace = folder
-        LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-                     "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
-                     "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
-                     "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
-                     "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-                     "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
-                     "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
-                     "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-                     "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-                     "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-                     "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-                     "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
-                     "Wyre.gdb", "York.gdb"]
-        # LAD_names = []
-        gdbs = []
-        for LAD_name in LAD_names:
-            gdbs.append(os.path.join(folder, LAD_name.replace(" ", "")))
-        in_file_name = "OSMM"
-        # in_file_name = "OSMM_CR_PHI_ALC_Desig_GS"  # Used for late corrections
-        Hab_field = "Interpreted_habitat"
-
-    # We only want to run delete_landform and simplify_OSMM.
-    # *** Change to only simplify_OSMM for late habitat corrections ***.
-    delete_landform = True
-    add_OSMM_hab = False
-    simplify_OSMM = True
-    simplify_HLU = False
-    select_HLU_or_OSMM = False
-    interpret_BAP = False
-
-else:
-    print("ERROR: you cannot combine region " + region + " with method " + method)
-    exit()
 
 # If OSMM is "undefined" this usually means the area is under development or scheduled for development. Choose whether to map as
 # "undefined" or as the current / original habitat pre-development. Up till now including NP we have used original but in future best to
@@ -125,40 +57,21 @@ else:
 undefined_or_original = "undefined"
 
 # Check the county from the table of LADs, to identify the list of LADs to process
-LADs = []
-if region == "Oxon":
-    LADs = ["Oxfordshire"]
 
-elif region == "Arc":
-    for LAD in arcpy.SearchCursor(LAD_table):
-        if LAD.getValue("county") in LADs_included:
-            LADs.append(LAD.getValue("desc_").replace(" ", ""))
-    # Or use this line to update only certain LADs
-    # LADs = ["AylesburyVale", "Chiltern", "Oxford", "SouthOxfordshire", "Wycombe"]
-elif region == "Blenheim":
-    LADs = ["Blenheim"]
-
-elif region == "NP":
-    LADs = LAD_names
-
-if region == "NP":
-    OSMM_Term = "descriptiveterm"
-    OSMM_Group = "descriptivegroup"
-    OSMM_Make = "make"
-else:
-    OSMM_Term = "DescriptiveTerm"
-    OSMM_Group = "DescriptiveGroup"
-    OSMM_Make = "Make"
+OSMM_Term = "descriptiveterm"
+OSMM_Group = "descriptivegroup"
+OSMM_Make = "make"
 
 print("LADs to process: " + "\n ".join(LADs))
 
 i=0
-for gdb in gdbs:
-    if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs or region == "NP":
+for LAD in LADs:
+    # if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs or region == "NP":
         i = i + 1
         print "Processing LAD " + str(i) + " out of " + str(len(LADs))
+        gdb = os.path.join(repository, LAD)
         arcpy.env.workspace = gdb
-        print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
+        print(''.join(["## Started interpreting habitats for ", LAD, " ", in_file_name, " on : ", time.ctime()]))
         in_file = os.path.join(folder, gdb, in_file_name)
 
         if delete_landform:
@@ -422,11 +335,6 @@ def Simplify_HLU(HLU_Hab):
         return "Quarry or spoil"
     elif "fen" in HLU_Hab:
         return "Lowland fens"
-    elif "flush" in HLU_Hab:
-        if "upland" in HLU_Hab:
-            return "Upland flushes, fens and swamps"
-        else:
-            return "Fen, marsh and swamp"
     elif "marsh" in HLU_Hab:
         return "Marshy grassland"
     elif "marginal" in HLU_Hab:
@@ -585,8 +493,6 @@ def interpretBAP(Hab, BAP):
             return "Heathland"
         elif "wood-pasture" in BAP or "wood pasture" in BAP:
             return "Parkland and scattered trees: broadleaved"
-        elif "pond" in BAP or "river" in BAP or "water" in BAP or "lake" in BAP:
-            return Hab
         else:
             return BAP.capitalize()
     else:
