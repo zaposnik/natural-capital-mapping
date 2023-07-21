@@ -11,77 +11,44 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-# region = "Arc"
-# region = "Oxon"
-region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
 method = "CROME_PHI"
 # method = "HLU"
 
-if region == "Oxon" and method == "HLU":
-    folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder,"Merge_OSMM_HLU_CR_ALC.gdb")]
+if method == "HLU":
+    data = r'Z:\NatCap_v2\Data.gdb'
     base_map_name = "OSMM_HLU_CR"
     out_name = "OSMM_HLU_CR_ALC"
-    ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb\ALC_Union"
+    ALC_data = r'Z:\NatCap_OS\Provisional_Agricultural_Land_Classification_(ALC)_(England)\ALC_Grades__Provisional____ADAS___Defra.shp'
 elif method == "CROME_PHI":
-    if region == "Arc":
-        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
-    elif region == "NP":
-        folder = r"M:\urban_development_natural_capital\LADs"
-    else:
-        print "Invalid region"
-        exit()
-    arcpy.env.workspace = folder
+    data = r'Z:\NatCap_OS_v2\Data.gdb'
     base_map_name = "OSMM_CROME_PHI"
-    # base_map_name = "LERC"
     out_name = "OSMM_CR_PHI_ALC"
-    # out_name = "LERC_ALC"
-    if region == "Arc":
-        gdbs = []
-        gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        #gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-        #gdbs.append(os.path.join(folder, "Chiltern.gdb"))
-        ALC_data = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Data.gdb\ALC_diss_union"
-    elif region == "NP":
-        gdbs = []
-        # Remember Leeds is missing cos already done
-        # LADs = ["Allerdale", "Barnsley", "Barrow-in-Furness", "Blackburn with Darwen", "Blackpool", "Bolton", "Bradford",
-        #         "Burnley", "Bury", "Calderdale",  "Carlisle", "Cheshire East", "Cheshire West and Chester", "Chorley",
-        #         "Copeland", "County Durham", "Craven", "Darlington", "Doncaster", "East Riding of Yorkshire",  "Eden",
-        #         "Fylde", "Gateshead", "Halton", "Hambleton", "Harrogate",  "Hartlepool", "Hyndburn",
-        #         "Kirklees", "Knowsley", "Lancaster", "Liverpool", "Manchester", "Middlesbrough", "Newcastle upon Tyne",
-        #         "North East Lincolnshire", "North Lincolnshire", "Northumberland", "North Tyneside", "Oldham", "Pendle", "Preston",
-        #         "Redcar and Cleveland",  "Ribble Valley", "Richmondshire", "Rochdale", "Rossendale", "Rotherham",  "Ryedale",
-        #         "Salford", "Scarborough", "Sefton", "Selby", "Sheffield", "South Lakeland", "South Ribble",
-        #         "South Tyneside", "St Helens", "Stockport",  "Stockton-on-Tees", "Sunderland", "Tameside", "Trafford",
-        #         "Wakefield", "Warrington", "West Lancashire", "Wigan",  "Wirral", "Wyre", "York"]
-        LADs = ["Copeland"]
-        for LAD in LADs:
-            LAD_name = LAD.replace(" ", "")
-            gdbs.append(os.path.join(folder, LAD_name + ".gdb"))
-        # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        #gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-        ALC_data = r"M:\urban_development_natural_capital\Data.gdb\ALC_NP_diss_sp_union"
-    elif region == "Oxon":
-        gdbs = []
-        LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
-        for LAD in LADs:
-            gdbs.append(os.path.join(folder, LAD))
-        ALC_data = os.path.join(folder, "ALC_Union.shp")
+    ALC_data = r'Z:\NatCap_OS\Provisional_Agricultural_Land_Classification_(ALC)_(England)\ALC_Grades__Provisional____ADAS___Defra.shp'
+
+prep_ALC = True
+
+arcpy.env.workspace = data
+if prep_ALC:
+    print('Dissolving ALC by Grade')
+    arcpy.Dissolve_management(ALC_data, "ALC_data_prepped", dissolve_field="ALC_GRADE", multi_part="MULTI_PART")
+    ALC_data = os.path.join(data, 'ALC_data_prepped')
+    print('Unioning to itself')
+    arcpy.Union_analysis(ALC_data, "ALC_Union", cluster_tolerance=1, gaps='NO_GAPS')
+    ALC_data = os.path.join(data, 'ALC_Union')
 
 i = 0
-for gdb in gdbs:
-
+repository = r"Z:\NatCap_OS_v2\Data\LADs_Output"
+LADs = os.listdir(repository)
+for LAD in LADs:
+    gdb = os.path.join(repository, LAD)
     arcpy.env.workspace = gdb
     i = i+1
     # Need to define base map here otherwise it keeps repeating the first gdb base map
     base_map = os.path.join(gdb, base_map_name)
 
     numrows = arcpy.GetCount_management(base_map)
-    print ("Processing " + gdb + ". No. " + str(i) + " out of " + str(len(gdbs)) + ". " +
+    print ("Processing " + LAD + ". No. " + str(i) + " out of " + str(len(LADs)) + ". " +
            base_map_name + " has " + str(numrows) + " rows.")
 
     print("    Selecting intensive agriculture polygons from land cover layer")
