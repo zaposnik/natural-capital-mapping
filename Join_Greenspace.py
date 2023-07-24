@@ -26,97 +26,35 @@ arcpy.env.XYTolerance = "0.001 Meters"
 
 # Choose region
 # region = "Arc"
-region = "Oxon"
-# region = "NP"
+# region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
 # method = "CROME_PHI"
-# method = "LERC"
 method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
-# OSGS_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS"
-OSGS_folder = r"M:\urban_development_natural_capital\osmm_greenspace\tiles"
-OSGS = r"M:\urban_development_natural_capital\osmm_greenspace\OSGS_Feb2021.gdb\OSMM_GS_NP"
+OSGS_folder = r"Z:\greenspace"
+OSGS = r"Z:\NatCap_OS_v2\OSGS.gdb\OSGS"
 
 # Open GS input file must be a gdb feature class so that there is a Shape_Area field for sorting
-# Open_GS_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS\OS_GS.gdb"
-Open_GS_gdb = r"D:\cenv0389\UK_data\OS_OpenGS_2019.gdb"
-# OS_openGS_in = os.path.join(Open_GS_gdb, "OS_openGS_Arc_in")
-# OS_openGS = "OS_openGS_Arc_union"
-OS_openGS_in = os.path.join(Open_GS_gdb, "OS_open_greenspace")
-OS_openGS = "OS_openGS_NP"
+Open_GS_gdb = r"Z:\NatCap_OS_v2\Open_GS_gdb.gdb"
+OS_openGS_in = os.path.join(Open_GS_gdb, "OS_openGS_in")
+OS_openGS = "OS_openGS"
 
 # Geodatabase containing the base map and where the outputs will go
-if region == "Oxon" and method == "HLU":
-    work_folder = r"D:\env0389\Oxon_GIS\Oxon_county\NaturalCapital"
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb"]
-    Base_map_name = "OSMM_HLU_CR_ALC_Des"
-    boundary = "Oxfordshire"
+if method == "HLU":
+   Base_map_name = "OSMM_HLU_CR_ALC_Desig"
+    boundary = 'boundary'
     Hab_field = "Interpreted_habitat"
-    TOID_field = "toid"
-    Base_Index_field = "OBJECTID"
-    DescGroup = "DescriptiveGroup"
-elif region == "NP":
-    work_folder = r"M:\urban_development_natural_capital"
-    # done "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-    #                  "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
-    #                  "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
-    #                  "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
-    #                  "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-    #                  "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb",
-    #                  "Manchester.gdb",
-    gdb_names = [ "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
-                 "North Lincolnshire.gdb", "Northumberland.gdb",
-                 "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-                 "South Tyneside.gdb",
-                 "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
-                 "Northumberland.gdb", "Trafford.gdb",
-                 "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
-                 "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
-    gdbs = []
-    for gdb_name in gdb_names:
-        gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs",  gdb_name.replace(" ", "")))
-    Base_map_name = "OSMM_CR_PHI_ALC_Desig"
-    boundary = "boundary"
-    TOID_field = "fid"
     Base_Index_field = "OBJECTID"
     DescGroup = "descriptivegroup"
-elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-    work_folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
-    arcpy.env.workspace = work_folder
-    if region == "Arc":
-        gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs = []
-        # gdbs.append(os.path.join(work_folder, "AylesburyVale.gdb"))
-        # gdbs.append(os.path.join(work_folder, "Chiltern.gdb"))
-        #
-        if method == "LERC":
-            Base_map_name = "LERC_ALC_Desig"
-            TOID_field = "Toid"
-            Base_Index_field = "OBJECTID_1"
-            DescGroup = "DescGroup"
-        else:
-            Base_map_name = "OSMM_CR_PHI_ALC_Desig"
-            TOID_field = "TOID"
-            Base_Index_field = "OBJECTID"
-            DescGroup = "DescriptiveGroup"
-
-    elif region == "Oxon":
-        gdbs = []
-        LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
-        for LAD in LADs:
-            gdbs.append(os.path.join(work_folder, LAD))
-        Base_map_name = "OSMM_CR_PHI_ALC_Desig"
-        TOID_field = "TOID"
-        Base_Index_field = "OBJECTID"
-        DescGroup = "DescriptiveGroup"
-
+elif  method == "CROME_PHI":
+    Base_map_name = "OSMM_CR_PHI_ALC_Desig"
+    Base_Index_field = "OBJECTID"
+    DescGroup = "descriptivegroup"
     boundary = "boundary"
+    Hab_field = "Interpreted_habitat"
 
-Hab_field = "Interpreted_habitat"
+
 # Flag if you only want to correct some habitat definitions that have been set up in OSMM_hab and then copied to a temporary habitat field
 # using Habitat_corrections.py. You may also then need to change the name of the base map in the main code (not here); currently line 179.
 correct_habitats = False
@@ -133,8 +71,6 @@ prep_openGS = False
 clip_OSGS = False
 clip_openGS = False
 copy_base_map = False
-# Need to trim off "osgb" from beginning of toid? Don't need to do this with most recent version of OSGS
-trim_toid = True
 join_OSGS = True
 clip_openGS2 = True
 join_openGS = True
@@ -142,6 +78,7 @@ interpret_GS = True
 
 # Loop through all the OSGS tiles in the OSGS folder and merge into a single file
 if merge_GS_files:
+    arcpy.CreateFileGDB_management("Z:\NatCap_OS_v2", "OSGS")
     print ("Merging all GS files into one")
     arcpy.env.workspace = OSGS_folder
     ifile = 0
@@ -171,11 +108,18 @@ if prep_openGS:
     arcpy.DeleteIdentical_management(OS_openGS, ["Shape"])
 
 i = 0
-for gdb in gdbs:
+
+repository = r"Z:\NatCap_OS_v2\Data\LADs_Output"
+LADs = os.listdir(repository)
+
+for LAD in LADs:
+     LAD_Name = LAD.replace('.gdb', '')
+    print('Working in ' + LAD_Name)
+    gdb = os.path.join(repository, LAD)
     i = i + 1
     arcpy.env.workspace = gdb
-    print (''.join(["### Started processing ", gdb, " on : ", time.ctime()]) + " This is number " + str(i) + " out of " + str(len(gdbs)))
-    gdb_name = gdb[:-4]
+    arcpy.env.workspace = gdb
+    print (''.join(["### Started processing ", LAD_Name, " on : ", time.ctime()]) + " This is number " + str(i) + " out of " + str(len(LADs)))
     if copy_base_map:
         print("    Making copy of base map")
         arcpy.CopyFeatures_management(Base_map_name, Base_map_name + "_GS")
@@ -188,7 +132,7 @@ for gdb in gdbs:
     if clip_OSGS:
         print("    Clipping OSGS for " + gdb_name)
         arcpy.Clip_analysis(OSGS, boundary, "OSGS")
-        print (str(arcpy.GetCount_management("OSGS")) + " rows in OSGS")
+        print(str(arcpy.GetCount_management("OSGS")) + " rows in OSGS")
     if clip_openGS:
         print("    Clipping OS open GS for " + gdb_name)
         arcpy.Clip_analysis(os.path.join(Open_GS_gdb, OS_openGS), boundary, "OS_Open_GS")
@@ -196,25 +140,21 @@ for gdb in gdbs:
 
     if join_OSGS:
         print("    Joining OSGS data")
-        print ("      Adding new fields for OSGS functions")
+        print("      Adding new fields for OSGS functions")
         MyFunctions.check_and_add_field(Base_map, "OSGS_priFunc", "TEXT", 40)
         MyFunctions.check_and_add_field(Base_map, "OSGS_secFunc", "TEXT", 40)
 
-        # Remove first 4 letters from TOID ('osgb') in OSGS layer
-        if trim_toid:
-            MyFunctions.check_and_add_field("OSGS", "TOID_trim", "TEXT", 20)
-            arcpy.CalculateField_management("OSGS", "TOID_trim", "!toid![4:]", "PYTHON_9.3")
-            join_field = "TOID_trim"
-        else:
-            join_field = "toid"
+        
+       
+        join_field = "toid"
 
         # Now join the field
         print ("      Joining OSGS table to base map")
         arcpy.MakeFeatureLayer_management(Base_map, "join_lyr")
-        arcpy.AddJoin_management("join_lyr", TOID_field, "OSGS", join_field)
+        arcpy.AddJoin_management("join_lyr", "fid", "OSGS", join_field)
 
         # Copy over prifunc and secfunc
-        print ("      Copying primary and secondary GS functions to base map")
+        print("      Copying primary and secondary GS functions to base map")
         arcpy.CalculateField_management("join_lyr", "OSGS_priFunc", "!OSGS.priFunc!", "PYTHON_9.3")
         arcpy.CalculateField_management("join_lyr", "OSGS_secFunc", "!OSGS.secFunc!", "PYTHON_9.3")
         arcpy.RemoveJoin_management("join_lyr", "OSGS")
@@ -238,7 +178,7 @@ for gdb in gdbs:
             # First dissolve OSGS to get a simple area for clipping
             arcpy.Dissolve_management("OSGS", "OSGS_dissolve")
             arcpy.Erase_analysis("OS_Open_GS", "OSGS_dissolve", "OS_Open_GS_clip")
-            print ("      Deleting slivers")
+            print("      Deleting slivers")
             MyFunctions.delete_by_size("OS_Open_GS_clip", 20)
             MyFunctions.check_and_repair("OS_Open_GS_clip")
 
@@ -277,7 +217,7 @@ for gdb in gdbs:
     if interpret_GS:
         # Consolidate GS definitions from OSGS primary and secondary functions and OS openGS
         if not correct_habitats:
-            print ("    Consolidating GS types")
+            print("    Consolidating GS types")
             MyFunctions.check_and_add_field(Base_map, "GreenSpace", "TEXT", 40)
             arcpy.CalculateField_management(Base_map, "Greenspace", "!OSGS_priFunc!", "PYTHON_9.3")
 
